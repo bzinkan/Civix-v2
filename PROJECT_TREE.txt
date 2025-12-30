@@ -1,0 +1,92 @@
+Civix-v2/
+│
+├── Configuration Files
+│   ├── .env.example              # Environment variable template
+│   ├── .eslintrc.json           # ESLint configuration
+│   ├── .gitignore               # Git ignore rules
+│   ├── .replitignore            # Replit-specific ignores
+│   ├── .replit                  # Replit deployment config
+│   ├── replit.nix               # Nix packages for Replit
+│   ├── package.json             # NPM dependencies & scripts
+│   ├── tsconfig.json            # TypeScript configuration
+│   ├── next.config.js           # Next.js configuration
+│   ├── tailwind.config.ts       # Tailwind CSS configuration
+│   └── postcss.config.js        # PostCSS configuration
+│
+├── Documentation
+│   ├── README.md                # Project overview & quick start
+│   ├── ARCHITECTURE.md          # Technical architecture docs
+│   ├── CONTRIBUTING.md          # Development guidelines
+│   ├── FILE_STRUCTURE.md        # File organization guide
+│   ├── REPLIT_SETUP.md          # Replit deployment guide
+│   ├── QUICK_REFERENCE.md       # Command & workflow reference
+│   └── PROJECT_TREE.txt         # This file
+│
+├── app/                         # Next.js App Router
+│   ├── layout.tsx              # Root layout component
+│   ├── page.tsx                # Landing page (/)
+│   ├── globals.css             # Global styles
+│   │
+│   ├── api/                    # API Routes
+│   │   ├── decisions/
+│   │   │   └── route.ts       # POST /api/decisions
+│   │   └── jurisdictions/
+│   │       └── route.ts       # GET /api/jurisdictions
+│   │
+│   └── dashboard/              # Dashboard Pages
+│       └── tester/
+│           └── page.tsx       # /dashboard/tester
+│
+├── lib/                        # Core Application Logic
+│   ├── rules/                 # Rules Engine
+│   │   ├── engine.ts         # Core evaluation logic
+│   │   ├── animals.ts        # Animal regulation schemas
+│   │   └── zoning.ts         # Zoning regulation schemas
+│   │
+│   ├── db/
+│   │   └── index.ts          # Prisma client singleton
+│   │
+│   └── types/
+│       └── rules.ts          # TypeScript type definitions
+│
+├── prisma/                     # Database
+│   ├── schema.prisma          # Database schema definition
+│   └── seed.ts                # Sample data seeder
+│
+├── components/                 # React Components (future)
+│   ├── ui/                    # Reusable UI components
+│   ├── layout/                # Layout components
+│   └── forms/                 # Form components
+│
+├── public/                     # Static Assets (future)
+│   ├── images/                # Image files
+│   └── fonts/                 # Font files
+│
+└── tests/                      # Tests (future)
+    ├── unit/                  # Unit tests
+    └── integration/           # Integration tests
+
+════════════════════════════════════════════════════════════════
+
+CURRENT FILE COUNT: 30 files
+
+KEY DIRECTORIES:
+  • app/         - Next.js application code (6 files)
+  • lib/         - Core business logic (5 files)
+  • prisma/      - Database schema & seeds (2 files)
+  • components/  - React components (empty - ready for future)
+  • public/      - Static assets (empty - ready for future)
+  • tests/       - Test files (empty - ready for future)
+
+CONFIGURATION: 11 files
+DOCUMENTATION: 7 files
+APPLICATION:   12 files
+
+════════════════════════════════════════════════════════════════
+
+GIT STATUS: Ready to commit
+  • 28 new files staged
+  • 1 modified file (README.md)
+  • Repository: https://github.com/bzinkan/Civix-v2.git
+
+════════════════════════════════════════════════════════════════

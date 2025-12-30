@@ -1,0 +1,34 @@
+name: Deploy to Replit
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    name: Trigger Replit Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Notify deployment
+        run: |
+          echo "✅ Code pushed to main branch"
+          echo "🚀 Replit will auto-deploy if connected to this repository"
+          echo "📝 Manual deployment: Go to Replit and click 'Deploy'"
+
+      - name: Create deployment comment
+        if: github.event_name == 'push'
+        run: |
+          echo "## 🚀 Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Code has been pushed to main branch." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Verify deployment on Replit" >> $GITHUB_STEP_SUMMARY
+          echo "2. Run database migrations if schema changed" >> $GITHUB_STEP_SUMMARY
+          echo "3. Test /dashboard/tester endpoint" >> $GITHUB_STEP_SUMMARY
+          echo "4. Check for any runtime errors" >> $GITHUB_STEP_SUMMARY

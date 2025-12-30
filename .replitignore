@@ -1,0 +1,6 @@
+# Replit-specific ignore file
+node_modules/
+.next/
+.env
+*.log
+.DS_Store

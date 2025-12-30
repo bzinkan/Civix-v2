@@ -1,0 +1,131 @@
+// Civix Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Jurisdictions (cities, counties, municipalities)
+model Jurisdiction {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // city, county, state
+  state       String
+  county      String?
+  rulesets    Ruleset[]
+  decisions   Decision[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name, state, county])
+  @@index([state])
+}
+
+// Rule categories (zoning, animals, business, etc.)
+model Ruleset {
+  id              String        @id @default(cuid())
+  jurisdiction    Jurisdiction  @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  jurisdictionId  String
+  category        String        // animals, zoning, business, construction
+  version         Int           @default(1)
+  isActive        Boolean       @default(true)
+  rules           Rule[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([jurisdictionId, category, version])
+  @@index([category])
+  @@index([jurisdictionId])
+}
+
+// Individual rules with conditions
+model Rule {
+  id              String    @id @default(cuid())
+  ruleset         Ruleset   @relation(fields: [rulesetId], references: [id], onDelete: Cascade)
+  rulesetId       String
+  key             String    // stable identifier (e.g., "pitbull_ownership")
+  description     String
+  outcome         String    // ALLOWED, RESTRICTED, PROHIBITED, CONDITIONAL
+  conditions      Json      // structured conditions logic
+  citation        String?   // legal reference
+  priority        Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([rulesetId, key])
+  @@index([key])
+}
+
+// User decisions (free tier)
+model Decision {
+  id              String        @id @default(cuid())
+  jurisdiction    Jurisdiction  @relation(fields: [jurisdictionId], references: [id])
+  jurisdictionId  String
+  category        String        // animals, zoning, etc.
+  questionKey     String        // stable question identifier
+  inputs          Json          // user-provided data
+  outcome         String        // ALLOWED, RESTRICTED, PROHIBITED, CONDITIONAL
+  rationale       String        // explanation
+  matchedRules    Json          // rules that matched
+  createdAt       DateTime      @default(now())
+  user            User?         @relation(fields: [userId], references: [id])
+  userId          String?
+
+  @@index([jurisdictionId])
+  @@index([category])
+  @@index([userId])
+}
+
+// Compliance reports (paid tier)
+model Report {
+  id              String    @id @default(cuid())
+  user            User      @relation(fields: [userId], references: [id])
+  userId          String
+  decisionId      String?   // optional link to decision
+  category        String
+  jurisdiction    String
+  steps           Json      // compliance steps
+  forms           Json      // required forms
+  providers       Json?     // recommended service providers
+  price           Int       // in cents
+  stripePiId      String?   // Stripe Payment Intent ID
+  status          String    @default("pending") // pending, paid, delivered
+  createdAt       DateTime  @default(now())
+  deliveredAt     DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Users
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String
+  stripeId      String?   // Stripe customer ID
+  decisions     Decision[]
+  reports       Report[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+}
+
+// Admin audit log
+model AuditLog {
+  id          String    @id @default(cuid())
+  action      String    // rule_created, rule_updated, jurisdiction_added
+  entityType  String
+  entityId    String
+  changes     Json?
+  userId      String?
+  createdAt   DateTime  @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
