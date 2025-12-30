@@ -1,0 +1,49 @@
+# Docker Compose for local development/testing
+# Simulates production environment
+
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: civix-db
+    environment:
+      POSTGRES_USER: civix
+      POSTGRES_PASSWORD: civix_dev_password
+      POSTGRES_DB: civix
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U civix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Civix application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: civix-app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://civix:civix_dev_password@postgres:5432/civix?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: local-development-secret-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:

@@ -48,6 +48,25 @@ npm test             # Run all tests
 npm run test:watch   # Watch mode
 ```
 
+### Docker (AWS Migration Prep)
+
+```bash
+# Build Docker image
+docker build -t civix .
+
+# Run with Docker Compose (full stack)
+docker-compose up
+
+# Stop containers
+docker-compose down
+
+# Test production build locally
+docker run -p 3000:3000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e NEXTAUTH_SECRET="your-secret" \
+  civix
+```
+
 ## Project URLs
 
 - **Landing**: `/`
