@@ -45,20 +45,29 @@ model Ruleset {
 
 // Individual rules with conditions
 model Rule {
-  id              String    @id @default(cuid())
-  ruleset         Ruleset   @relation(fields: [rulesetId], references: [id], onDelete: Cascade)
-  rulesetId       String
-  key             String    // stable identifier (e.g., "pitbull_ownership")
-  description     String
-  outcome         String    // ALLOWED, RESTRICTED, PROHIBITED, CONDITIONAL
-  conditions      Json      // structured conditions logic
-  citation        String?   // legal reference
-  priority        Int       @default(0)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                  String    @id @default(cuid())
+  ruleset             Ruleset   @relation(fields: [rulesetId], references: [id], onDelete: Cascade)
+  rulesetId           String
+  key                 String    // stable identifier (e.g., "pitbull_ownership")
+  description         String
+  outcome             String    // ALLOWED, RESTRICTED, PROHIBITED, CONDITIONAL
+  conditions          Json      // structured conditions logic
+  citation            String?   // legal reference
+  priority            Int       @default(0)
+
+  // AI Matching fields
+  subcategory         String?   // e.g., "fences", "chickens", "dangerous_dogs"
+  canonicalQuestions  String[]  // Natural language questions this rule answers
+  keywords            String[]  // Search keywords for matching
+  requiredInputs      String[]  // Fields needed to evaluate this rule
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  citations           Citation[]
 
   @@unique([rulesetId, key])
   @@index([key])
+  @@index([subcategory])
 }
 
 // User decisions (free tier)
@@ -104,17 +113,109 @@ model Report {
 
 // Users
 model User {
+  id                    String         @id @default(cuid())
+  email                 String         @unique
+  name                  String?
+  passwordHash          String
+  stripeId              String?        // Stripe customer ID
+
+  // Subscription tracking
+  subscriptionStatus    String         @default("none") // none, active, cancelled, past_due
+  subscriptionId        String?
+  subscriptionEndsAt    DateTime?
+
+  // One-time purchase credits
+  queryCredits          Int            @default(0)
+
+  decisions             Decision[]
+  reports               Report[]
+  conversations         Conversation[]
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([email])
+  @@index([subscriptionStatus])
+}
+
+// Anonymous user tracking (for free tier limits)
+model AnonymousUsage {
   id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  passwordHash  String
-  stripeId      String?   // Stripe customer ID
-  decisions     Decision[]
-  reports       Report[]
+  fingerprint   String    @unique
+  queryCount    Int       @default(0)
+  lastQueryAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  @@index([email])
+  @@index([fingerprint])
+  @@index([lastQueryAt])
+}
+
+// Conversation sessions (multi-turn AI conversations)
+model Conversation {
+  id              String    @id @default(cuid())
+  user            User?     @relation(fields: [userId], references: [id])
+  userId          String?
+  fingerprint     String?   // For anonymous users
+
+  // Conversation state
+  jurisdiction    String?
+  category        String?
+  subcategory     String?
+  collectedInputs Json      @default("{}")
+
+  // AI provider tracking
+  primaryProvider String    @default("gemini") // gemini, anthropic, openai
+  fallbackUsed    Boolean   @default(false)
+
+  // Status
+  status          String    @default("active") // active, completed, abandoned
+
+  messages        Message[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  completedAt     DateTime?
+
+  @@index([userId])
+  @@index([fingerprint])
+  @@index([status])
+}
+
+// Individual messages in a conversation
+model Message {
+  id              String        @id @default(cuid())
+  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId  String
+
+  role            String        // user, assistant, system
+  content         String        @db.Text
+
+  // AI metadata
+  provider        String?       // Which AI generated this (if assistant)
+  tokensUsed      Int?
+  confidence      Float?        // For AI responses
+
+  createdAt       DateTime      @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+// Citations for legal references
+model Citation {
+  id              String   @id @default(cuid())
+  rule            Rule     @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  ruleId          String
+
+  ordinanceNumber String
+  section         String
+  title           String?
+  text            String   @db.Text
+  url             String?
+  pageNumber      Int?
+
+  createdAt       DateTime @default(now())
+
+  @@index([ruleId])
 }
 
 // Admin audit log

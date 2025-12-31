@@ -29,7 +29,12 @@
     "next-auth": "^4.24.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.0",
-    "tailwind-merge": "^2.5.0"
+    "tailwind-merge": "^2.5.0",
+    "@google/generative-ai": "^0.21.0",
+    "@anthropic-ai/sdk": "^0.32.1",
+    "openai": "^4.75.0",
+    "@fingerprintjs/fingerprintjs": "^4.5.1",
+    "date-fns": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.16.0",
